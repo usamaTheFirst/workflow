@@ -1,0 +1,64 @@
+﻿@page "/t"
+@layout CustomLayout
+
+@*@inject  IJSRuntime JSRuntime;
+
+  @code{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+
+{
+  await JSRuntime.InvokeVoidAsync("BlazorHelpers.RedirectTo", "page_name");
+}
+  }*@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not Authorized</title>
+    <!-- Bootstrap CSS -->
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 6rem;
+            margin-bottom: 1rem;
+            color: #dc3545;
+        }
+
+        p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .illustration {
+            width: 300px;
+        }
+
+        .btn {
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Not Authorized</h1>
+        <p>You are not Authorized To Access FFBL Apps</p>
+        <img src="/Images/Not_allowed.svg.png" alt="Not Authorized" class="illustration">
+
+     
+    </div>
+
+    <!-- Bootstrap JavaScript dependencies -->
+</body>
+</html>

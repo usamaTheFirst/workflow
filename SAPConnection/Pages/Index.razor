@@ -1,0 +1,93 @@
+﻿@page "/"
+
+@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.EntityFrameworkCore;
+@using Microsoft.Extensions.Options;
+@using SAPConnection.Data;
+@using SAPConnection.Data.Services;
+@using Microsoft.AspNetCore.Http
+@using System.Text.Json;
+
+@inject IToastService toastService
+@inject AuthenticationStateProvider AuthNStateProvider
+@inject IHttpContextAccessor httpContextAccessor
+@inject IJSRuntime JSRuntime
+
+@inject ApplicationUser cau
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject ApplicationUserService applicationUserService
+@layout CustomLayout
+@inject ApplicationUserService applicationUserService
+
+
+<CascadingAuthenticationState>
+    <AuthorizeView>
+
+        <NotAuthorized>
+            @{
+                    //<RedirectTo></RedirectTo>
+            }
+        </NotAuthorized>
+
+    </AuthorizeView>
+</CascadingAuthenticationState>
+
+
+
+
+
+
+
+@code {
+    private string UserName { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        // var user = authState.User;
+
+        // if (user.Identity?.IsAuthenticated ?? false)
+        // {
+        //     UserName = user.Identity.Name ?? "";
+        //     var result = SAPService.getUserInfo(new LoginBapiInputParameter
+        //         {
+        //             uid = UserName.Split(@"\")[1].ToUpper()
+        //         });
+
+        //     cau.Email = result.email;
+        //     cau.Pno = result.pno;
+        //     // cau.Pno = "00002399";
+        //     //var empData = SAPService.GetSapEmployeeData("00000079").Items[0];
+        //     var empData = await applicationUserService.GetUser(cau.Pno);
+        //     if (empData != null)
+        //     {
+        //         cau.Designation = empData.Designation;
+        //         cau.DesignationId = empData.DesignationId;
+        //         cau.Location = empData.Location;
+        //         cau.DepartmentId = empData.DepartmentId;
+        //         cau.SectionId = empData.SectionId;
+        //         cau.Name = empData.Name;
+        //         var userDataJson = JsonSerializer.Serialize(cau);
+        //         httpContextAccessor.HttpContext.Session.SetString("UserData", userDataJson);
+        //     }
+        //     else
+        //     {
+        //         NavigationManager.NavigateTo("/t");
+        //     }
+        // }
+        // StateHasChanged();
+        NavigationManager.NavigateTo("/workflow");
+
+    }
+    }
+
+
+
+
+
+
+
+
+

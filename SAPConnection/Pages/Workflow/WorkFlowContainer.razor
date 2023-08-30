@@ -1,0 +1,83 @@
+﻿@page "/workflow"
+@using SAPConnection.Data
+@using SAPConnection.Pages.Workflow
+
+@if(Operation=="Edit")
+{
+    title = "Edit Workflow";
+    appname = workflowItems[0].App;
+    @*wfType = *@
+}
+
+<div class="row pb-4">
+    <h2 class="text-primary">@title</h2>
+    <hr />
+</div>
+
+<div class="mb-3">
+    <label>App</label>
+    <select @bind ="appname" class="form-control form-control-lg">
+        <option value="leave">Leave</option>
+        <option value="po">Payment Order</option>
+        <option value="timeEvents">Attendence Regularization</option>
+        <option value="visitReg">Visit Regularization</option>
+        <option value="positionReq">Position Requisition</option>
+
+
+    </select>
+</div>
+@if(appname!="")
+{
+    <div class="mb-3">
+    <label>Workflow Type</label>
+    <select @bind ="wfType" class="form-control form-control-lg">
+        <option value="0">General</option>
+        <option value="1">By Pno </option>
+        <option value="2">By Orgnization Id </option>
+        <option value="3">By Designation Id </option>
+        <option value="4">By General Shift </option>
+        <option value="5">By Rotating Shift</option>
+    </select>
+    </div>
+}
+
+
+@if (wfType == 0)
+{
+    <WorkflowForAllTypes app="@appname" wftype="General" />
+
+}
+
+@if (wfType == 1)
+{
+    <WorkflowForAllTypes app="@appname" wftype="By Pno" />
+
+}
+@if (wfType == 2)
+{
+    <WorkflowForAllTypes app="@appname" wftype="By Organization Id" />
+
+}
+@if (wfType == 3)
+{
+    <WorkflowForAllTypes app="@appname" wftype="By Designation Id" />
+}
+@if (wfType == 4)
+{
+    <WorkflowForAllTypes app="@appname" wftype="By General Shift" />
+}
+@if (wfType == 5)
+{
+    <WorkflowForAllTypes app="@appname" wftype="By Rotating Shift" />
+}
+
+@code {
+    [Parameter]
+    public string? Operation { set; get; }
+    [Parameter]
+    public List<WorkflowItem>? workflowItems { set; get; }
+
+    string appname = "";
+    int wfType = -1;
+    string title = "Create a New Workflow";
+}

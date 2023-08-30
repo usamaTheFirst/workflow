@@ -1,0 +1,519 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using Microsoft.EntityFrameworkCore;
+
+@using SAPConnection.Data;
+@using SAPConnection.Data.Services;
+
+@inject StaticApproverService staticApproverService
+@inject MyDbContext context
+@inject WorkFlowService WorkFlowService
+@inject NavigationManager NavigationManager
+@inject IToastService toastService1
+@inject ApplicationUser cau
+@using System.Text
+@using System.Text.Json
+@inject IHttpContextAccessor httpContextAccessor
+@inject AuthenticationStateProvider AuthenticationStateProvider
+<form>
+    <div class="border p-3 mt-2">
+
+
+        <div class="mb-3">
+            <label>Location</label>
+            <select @bind="Location" class="form-control form-control-lg">
+                <option value="1000">Head Office</option>
+
+                <option value="1100">Plant Site</option>
+
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Sub Type</label>
+            <select @bind="subtype" class="form-control form-control-lg">
+
+                <option selected style="display:none;"></option>
+
+                <SAPConnection.Pages.ReusableComponents.ReusableWorkFLowPanel appnam=@app>
+
+                </SAPConnection.Pages.ReusableComponents.ReusableWorkFLowPanel>
+
+            </select>
+        </div>
+        @if (wftype == "By Designation Id")
+        {
+            <div class="mb-3">
+                <label>Designation Id</label>
+                <input type="text" class="form-control" @bind="specificId" />
+            </div>
+        }
+        else if (wftype == "By Organization Id")
+        {
+            <div class="mb-3">
+                <label>Section ID</label>
+                <input type="text" class="form-control" @bind="specificId" />
+            </div>
+        }
+        else if (wftype == "By Pno")
+        {
+            <div class="mb-3">
+                <label>Pno</label>
+                <input type="text" class="form-control" @bind="specificId" />
+            </div>
+        }
+
+
+        @if (app == "leave")
+        {
+            <div class="mb-3">
+                <label>Employee Group</label>
+                <select @bind="employeeGroup" class="form-control form-control-lg">
+                    <option selected style="display:none;"></option>
+
+                    <option value="M">
+                        Management
+                    </option>
+
+                    <option value="J">
+                        Junior Management
+                    </option>
+
+                    <option value="S">
+                        Staff
+                    </option>
+                </select>
+            </div>
+        }
+
+        @if (app == "leave" && (wftype == "By General Shift" || wftype == "By Rotating Shift"))
+        {
+            <div class="mb-3">
+                <label>Shift Type:</label>
+                <select class="form-control form-control-lg" id="shiftInchargeDropdown" @bind="shiftType">
+                    <option selected style="display:none;" value=""></option>
+                    @if (wftype == "By General Shift")
+                    {
+                        <option value="GEN HO">GEN HO</option>
+                        <option value="GEN PS">GEN PS</option>
+                        <option value="GEN PS A">GEN PS A</option>
+                        <option value="GEN PS B">GEN PS B</option>
+                        <option value="GEN PS C">GEN PS C</option>
+                        <option value="GEN PS D">GEN PS D</option>
+                    }
+                    else
+                    {
+                        <option value="RS-A">RS-A</option>
+                        <option value="RS-B">RS-B</option>
+                        <option value="RS-C">RS-C</option>
+                        <option value="RS-D">RS-D</option>
+                    }
+                   
+                    
+                </select>
+
+            </div>
+        }
+
+        <!-- PO Amount Handling -->
+        @if (app == "po")
+        {
+            <div class="mb-3">
+
+                <select @bind="sign" class="form-control form-control-lg">
+                    <option selected style="display:none;"></option>
+                    <option>@eq</option>
+                    <option>@lt</option>
+                    <option>@gt</option>
+                    <option>@le</option>
+                    <option>@ge</option>
+                    <option>@ne</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label>Amount</label>
+                <input @bind="@amount" type="number" class="form-control" />
+            </div>
+        }
+
+        <div class="mb-3">
+            <label>No. of Stages</label>
+            <input value="@numberOfStages" type="number" class="form-control" @onchange="HandleChange" />
+        </div>
+        @if (numberOfStages > 0)
+        {
+            @*addItemsToList(numberOfStages);*@
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Task</th>
+                        <th scope="col">Approver Type</th>
+                        <th scope="col">Approver</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @foreach (var item in workflowItems)
+                    {
+                        if (subtype != null)
+                        {
+                            if (wftype == "General")
+                            {
+                                if (app == "po")
+                                {
+                                    item.Key = Location.ToString() + "-" + subtype + sign + amount.ToString();
+                                }
+                                else if (app == "leave")
+                                {
+                                    item.Key = Location.ToString() + "-" + employeeGroup + "-" + subtype;
+
+                                }
+                                else
+                                {
+                                    item.Key = Location.ToString() + "-" + subtype;
+                                }
+                            }
+                            else if (wftype == "By General Shift")
+                            {
+                                if (app == "po")
+                                {
+                                    item.Key = Location.ToString() + "-" + subtype.ToString() + sign + amount.ToString() + "-m-" + "Gshift";
+                                }
+                                else if (app == "leave")
+                                {
+                                    item.Key = Location.ToString() + "-" + employeeGroup + "-" + subtype.ToString() + "-" + shiftType;
+
+                                }
+                                else
+                                {
+                                    item.Key = Location.ToString() + "-" + subtype.ToString() + "-m-" + "Gshift";
+                                }
+                            }
+                            else if (wftype == "By Designation Id")
+                            {
+                                if (app == "po")
+                                {
+                                    item.Key = Location.ToString() + "-" + subtype.ToString() + sign + amount.ToString() + "-" + specificId;
+                                }
+                                else if (app == "leave")
+                                {
+                                    item.Key = Location.ToString() + "-" + employeeGroup + "-" + subtype.ToString() + "-" + specificId.ToString();
+
+                                }
+                                else
+                                {
+                                    item.Key = Location.ToString() + "-" + subtype.ToString() + "-" + specificId;
+                                }
+                            }
+                            else if (wftype == "By Organization Id")
+                            {
+                                if (app == "po")
+                                {
+                                    item.Key = Location.ToString() + "-" + subtype.ToString() + sign + amount.ToString() + "-" + specificId;
+                                }
+                                else if (app == "leave")
+                                {
+                                    item.Key = Location.ToString() + "-" + employeeGroup + "-" + subtype.ToString() + "-" + specificId.ToString();
+
+                                }
+                                else
+                                {
+                                    item.Key = Location.ToString() + "-" + subtype.ToString() + "-" + specificId;
+                                }
+                            }
+                            else if (wftype == "By Pno")
+                            {
+                                if (app == "po")
+                                {
+                                    item.Key = Location.ToString() + "-" + subtype.ToString() + sign + amount.ToString() + "-" + specificId;
+                                }
+                                else if (app == "leave")
+                                {
+                                    item.Key = Location.ToString() + "-" + employeeGroup + "-" + subtype.ToString() + "-" + specificId.ToString();
+
+                                }
+                                else
+                                {
+                                    item.Key = Location.ToString() + "-" + subtype.ToString() + "-" + specificId;
+                                }
+                            }
+                            else if (wftype == "By Rotating Shift")
+                            {
+                                if (app == "po")
+                                {
+                                    item.Key = Location.ToString() + "-" + subtype.ToString() + sign + amount.ToString() + "-m-" + "Rshift";
+                                }
+                                else if (app == "leave")
+                                {
+                                    item.Key = Location.ToString() + "-" + employeeGroup + "-" + subtype.ToString() + "-" + shiftType;
+
+                                }
+                                else
+                                {
+                                    item.Key = Location.ToString() + "-" + subtype.ToString() + "-m-" + "Rshift";
+                                }
+                            }
+
+
+                            <tr>
+                                <th scope="row">@item.Level</th>
+                                <td>
+                                    <select class="form-control form-control-lg" @bind="item.AssignedTask">
+                                        <option>Review</option>
+                                        <option>Approve</option>
+                                        @if (app == "po")
+                                        {
+                                            <option>Payment</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td>
+                                    <select class="form-control form-control-lg" @bind="item.ApproverType">
+                                        <option selected style="display:none;"></option>
+                                        <option value="@ApproverType.ByUser">By User</option>
+                                        <option value="@ApproverType.ByRole">By Role</option>
+                                    </select>
+                                </td>
+
+                                @if (item.ApproverType == null)
+                                {
+                                    <td></td>
+                                }
+                                else if (item.ApproverType == ApproverType.ByRole)
+                                {
+                                    <td>
+                                        <select @bind="item.ApproverRole" class="form-control form-control-lg">
+                                            <option selected style="display:none;"></option>
+                                            @if (app == "leave")
+                                            {
+                                                <option value="@ApproverRole.Incharge">Incharge</option>
+
+                                            }
+
+                                            <option value="@ApproverRole.SectionHead">Section Head</option>
+                                            <option value="@ApproverRole.UnitManager">Unit Manager</option>
+                                            <option value="@ApproverRole.DepartmentHead">Department Head</option>
+                                            <option value="@ApproverRole.FunctionalHead">Functional Head</option>
+                                        </select>
+                                    </td>
+                                }
+                                else if (item.ApproverType == ApproverType.ByUser)
+                                {
+                                    <td>
+
+                                        <select @bind="item.StaticApproverRole" class="form-control form-control-lg">
+                                            <option selected style="display:none;"></option>
+                                            @foreach (var r in All_Static_Approvers)
+                                            {
+                                                <option value="@r.RoleId">@r.Role</option>
+                                            }
+                                        </select>
+                                    </td>
+                                }
+
+
+                            </tr>
+                        }
+                    }
+
+
+                </tbody>
+            </table>
+        }
+
+        <div class="text-end m-4">
+
+            <button style="width : 25%; height : 40px ; color : white; background-color : #3a0647 ; border : 1px solid #3a0647; border-radius : 5px" @onclick="create" type="submit" @onclick:preventDefault>
+                Save
+            </button>
+        </div>
+
+
+    </div>
+</form>
+
+@code {
+    [Parameter]
+    public string app { get; set; }
+    [Parameter]
+    public string wftype { get; set; }
+
+    int numberOfStages = 0;
+    string SectionHeadId, UnitManagerId, DepartmentHeadId, FunctionalHeadId;
+    int Location;
+    string subtype;
+    string sign;
+    double amount;
+    string eq = "=", lt = "<", gt = ">", le = "<=", ge = ">=", ne = "!=";
+    string selected_role;
+    string specificId;
+
+    List<string> All_Roles = new List<string>();
+    List<StaticApproversModel> All_Static_Approvers = new List<StaticApproversModel>();
+    List<WorkflowItem> workflowItems = new List<WorkflowItem>();
+
+    WorkflowItem t = new WorkflowItem();
+    string employeeGroup;
+    string shiftType;
+    ApplicationUser AppUser;
+    protected override async Task OnInitializedAsync()
+    {
+        //string deptId, sectId;
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            if (httpContextAccessor.HttpContext.Session.TryGetValue("UserData", out var userDataBytes))
+            {
+                var userDataJson = Encoding.UTF8.GetString(userDataBytes);
+                AppUser = JsonSerializer.Deserialize<ApplicationUser>(userDataJson);
+
+                //deptId = AppUser.DepartmentId;
+                //sectId = AppUser.SectionId;
+                //            ApproversModel approvers = await context.Approvers
+                //.Where(a => a.SectionId == sectId && a.DepartmentId == deptId).FirstOrDefaultAsync();
+                //            //SectionHeadId = approvers.SectionHeadId;
+                //            //UnitManagerId = approvers.UnitManagerId;
+                //            //DepartmentHeadId = approvers.DepartmentHeadId;
+                //            //FunctionalHeadId = approvers.FunctionalHeadId;
+
+            }
+            All_Static_Approvers = await staticApproverService.GetAllStaticApproverRolesAsync();
+
+
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/t");
+
+        }
+
+        //var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        //var user1 = authState.User;
+        //if (user1.Identity.IsAuthenticated)
+        //{
+        //    if (httpContextAccessor.HttpContext.Session.TryGetValue("UserData", out var userDataBytes))
+        //    {
+        //        var userDataJson = Encoding.UTF8.GetString(userDataBytes);
+        //        cau = JsonSerializer.Deserialize<ApplicationUser>(userDataJson);
+        //    }
+        //}
+
+        //var user = cau;
+
+
+        //var dept = await context.ApplicationUser
+        //    .Where(u => u.Uid == user.Uid)
+        //    .Select(u => u.DepartmentId)
+        //    .FirstOrDefaultAsync();
+        //deptId = dept;
+
+
+        //var sect = await context.ApplicationUser
+        //   .Where(u => u.Uid == user.Uid)
+        //   .Select(u => u.SectionId)
+        //   .FirstOrDefaultAsync();
+        //sectId = sect;
+
+
+        //  ApproversModel approvers = await context.Approvers
+        //.Where(a => a.SectionId == sectId && a.DepartmentId == deptId).FirstOrDefaultAsync();
+        //  if(approvers!=null)
+        //  {
+        //      SectionHeadId = approvers.SectionHeadId;
+        //      UnitManagerId = approvers.UnitManagerId;
+        //      DepartmentHeadId = approvers.DepartmentHeadId;
+        //      FunctionalHeadId = approvers.FunctionalHeadId;
+        //  }
+        //  else
+        //  {
+        //      toastService1.ShowError("No Approvers Found");
+        //  }
+        All_Static_Approvers = await staticApproverService.GetAllStaticApproverRolesAsync();
+    }
+
+    bool valid = true;
+    private async Task create()
+    {
+        valid = true;
+        if (Location == 0 || string.IsNullOrEmpty(subtype) || numberOfStages <= 0)
+        {
+            valid = false;
+        }
+        if (app == "po")
+        {
+            if (string.IsNullOrEmpty(sign) || amount <= 0)
+                valid = false;
+        }
+        if (valid)
+        {
+            foreach (WorkflowItem item in workflowItems)
+            {
+                if (!valid)
+                {
+                    break;
+                }
+                item.App = app;
+                item.Location = Location.ToString();
+                item.SubType = subtype;
+                item.WF_Type = wftype;
+                item.specific_id = specificId;
+                switch (item.ApproverType)
+                {
+                    case ApproverType.ByRole:
+                        if (item.ApproverRole == null)
+                        {
+                            valid = false;
+                        }
+                        break;
+                    case ApproverType.ByUser:
+                        if (item.StaticApproverRole == null)
+                        {
+                            valid = false;
+                        }
+                        break;
+                    default:
+                        valid = false;
+                        break;
+                }
+            }
+        }
+        if (valid)
+        {
+            foreach (var wf in workflowItems)
+            {
+                await WorkFlowService.CreateWorkFlow(wf);
+            }
+            NavigationManager.NavigateTo("all-workflows");
+        }
+        else
+        {
+            toastService1.ShowError("Please Fill Complete Form to Save WorkFlow!");
+        }
+
+    }
+
+    private void addItemsToList()
+    {
+        clearItems();
+        for (int i = 1; i <= numberOfStages; i++)
+        {
+            WorkflowItem item = new WorkflowItem();
+            item.Level = i;
+            item.App = app;
+            workflowItems.Add(item);
+        }
+    }
+    private void clearItems()
+    {
+        workflowItems.Clear();
+    }
+
+    private void HandleChange(ChangeEventArgs e)
+    {
+        numberOfStages = Int32.Parse(e.Value.ToString());
+        addItemsToList();
+    }
+
+}

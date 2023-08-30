@@ -1,0 +1,118 @@
+﻿@page "/shift-incharge"
+@using SAPConnection.Data;
+@using SAPConnection.Data.Services
+@inject ApproversService approverService
+@inject ShiftInchargeService shiftInchargeService
+
+
+
+<h3>Approvers Form</h3>
+<EditForm Model="@formModel" OnValidSubmit="SubmitForm">
+     <DataAnnotationsValidator />
+<div class="form-group">
+    <label for="departmentDropdown">Department:</label>
+    <select class="form-control form-control-lg" id="departmentDropdown" @bind="formModel.SelectedDepartment">
+
+        <option selected style="display:none;" value="">Select Department</option>
+        @foreach (var approver in Approvers.DistinctBy(a=>a.DepartmentId))
+        {
+            <option value="@approver.DepartmentId">@approver.DepartmentName</option>
+        }
+    </select>
+        <ValidationMessage For="@(() => formModel.SelectedDepartment)" />
+
+</div>
+
+@if (!string.IsNullOrEmpty(formModel.SelectedDepartment))
+{
+    <div class="form-group">
+        <label for="sectionDropdown">Section:</label>
+        <select class="form-control form-control-lg" id="sectionDropdown" @bind="formModel.SelectedSection">
+            <option selected style="display:none;" value="">Select Section</option>
+            @foreach (var sec in GetSectionsByDepartment(formModel.SelectedDepartment))
+            {
+                <option value="@sec.SectionId">@sec.SectionName</option>
+            }
+        </select>
+            <ValidationMessage For="@(() => formModel.SelectedSection)" />
+
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(formModel.SelectedSection))
+{
+    <div class="form-group">
+        <label for="shiftInchargeDropdown">Shift Type:</label>
+        <select class="form-control form-control-lg" id="shiftInchargeDropdown" @bind="formModel.SelectedShift">
+            <option selected style="display:none;" value="">Select Shift Incharge</option>
+             <option  value="GEN HO">GEN HO</option>
+            <option value="GEN PS">GEN PS</option>
+            <option value="GEN PS A">GEN PS A</option>
+            <option value="GEN PS B">GEN PS B</option>
+            <option value="GEN PS C">GEN PS C</option>
+            <option value="GEN PS D">GEN PS D</option>
+            <option value="RS-A">RS-A</option>
+            <option value="RS-B">RS-B</option>
+            <option value="RS-C">RS-C</option>
+            <option value="RS-D">RS-D</option>
+ 
+        </select>
+            <ValidationMessage For="@(() => formModel.SelectedShift)" />
+
+    </div>
+}
+@if (!string.IsNullOrEmpty(formModel.SelectedShift))
+{
+<div class="form-group">
+    <label for="inchargePNoInput">Incharge PNo:</label>
+        <input type="number" class="form-control form-control-lg" id="inchargePNoInput" @bind="formModel.InchargePNo">
+            <ValidationMessage For="@(() => formModel.InchargePNo)" />
+
+</div>
+}
+<br />
+<button type="submit" class="btn btn-lg col-md-2 mybtn" >Submit</button>
+</EditForm>
+
+@code {
+    private List<string> departments;
+    private List<ApproversModel> allApprovers;
+
+        private ShiftInchargeFormModel formModel = new ShiftInchargeFormModel();
+
+
+    // Simulated data
+    private List<ApproversModel> Approvers = new List<ApproversModel>();
+
+
+    protected override async void OnInitialized()
+    {
+        Approvers = await approverService.GetAllApprovers();
+        departments = Approvers.Select(a => a.DepartmentName).Distinct().ToList();
+        allApprovers = Approvers;
+    }
+
+    private List<ApproversModel> GetSectionsByDepartment(string department)
+    {
+        return allApprovers
+            .Where(a => a.DepartmentId == department)           
+            .Distinct()
+            .ToList();
+    }
+
+    private async void SubmitForm()
+    {
+        // You can handle form submission logic here
+    
+
+        ApproversModel? model = Approvers.Where(a => a.DepartmentId == formModel.SelectedDepartment && a.SectionId == formModel.SelectedSection).FirstOrDefault();
+        if(model != null)
+        {
+            await shiftInchargeService.CreateShiftIncharge(new ShiftInchargeModel { ApproversId = model.SapId, ShiftInchargePno = formModel.InchargePNo, ShiftType=formModel.SelectedShift });
+        }
+
+
+    }
+
+   
+}

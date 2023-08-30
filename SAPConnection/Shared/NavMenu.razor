@@ -1,0 +1,510 @@
+﻿@using SAPConnection.Data
+@using System.Text
+@using System.Text.Json
+@inject IHttpContextAccessor httpContextAccessor
+@inject CustomTheme custom
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager navigationManager
+
+<div style="background-color:@custom.navColor; border:1px solid @custom.navColor; border-bottom-color: white;" class="top-row ps-3 navbar navbar-dark">
+    <div  class="container-fluid">
+        <a style="width: 500px" class="navbar-brand" href="">@(AppUser?.Name ?? "") </a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+@*<div style="background-image: linear-gradient(#0b2363,#3a0647);" class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">*@
+<div  class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+
+      
+      
+
+        
+
+             <div class="nav-item px-1">
+            <NavLink class="nav-link" href="all-regularizations" @onclick ="ClickOnReg">
+            <span class="@RegSign" aria-hidden="true"></span> <div class="navigation-item">Attendence Regularization</div>
+        </NavLink>
+        </div>
+
+     @if(AttendenceDisplay){
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="TimeEvents">
+                    <span class="oi oi-bolt" aria-hidden="true"></span> <div class="navigation-item">Time Events</div>
+                </NavLink>
+
+            </div>
+
+@*            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="all-regularizations">
+                      <span class="oi oi-bolt" aria-hidden="true"></span>
+                    <span style="display: flex; overflow: visible;  white-space: pre;">Regularization Requests </span>
+        </NavLink>
+                
+        </div>*@
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="AttendanceRegularization">
+                <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> Create Regularization</div>
+            </NavLink>
+                
+        </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="actions-reg">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> Actions</div>
+                </NavLink>
+            </div>
+           
+        
+
+
+     }
+       
+        <div class="nav-item px-1">
+            <NavLink class="nav-link" href="all-leaves" @onclick="ClickOnLeave">
+                <span class=@leaveSign aria-hidden="true"></span><div class="navigation-item"> Leave</div>
+            </NavLink>
+        </div>
+        @if (leaveDisplay)
+        {
+            <div class="nav-item px-3">
+                @* <NavLink class="nav-link"  href="all-leaves"> *@
+                <NavLink class="nav-link" @onclick="@(()=>OnNavLinkClick("all-leaves"))">
+
+                    <span class="oi oi-bolt" aria-hidden="true"></span> <div class="navigation-item">All Leaves</div>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="leave">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item">Request Leave</div>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="actions">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item">My Actions</div>
+                </NavLink>
+            </div>
+
+        }
+        <div class="nav-item px-1">
+            <NavLink class="nav-link" href="all-PaymentOrders" @onclick="ClickOnPO">
+                <span class=@PoSign aria-hidden="true"></span><div class="navigation-item">Payment Order</div>
+            </NavLink>
+        </div>
+        @if (PoDisplay)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="all-PaymentOrders">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item">All Payment Orders</div>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="PO">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item">Create PO</div>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="Actions-PO">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item">My Actions</div>
+                </NavLink>
+            </div>
+        }
+
+
+        <div class="nav-item px-1">
+            <NavLink class="nav-link" href="all-batch-reg" @onclick="ClickOnBatch">
+                <span class=@batchSign aria-hidden="true"></span><div class="navigation-item">Batch Regularization</div>
+            </NavLink>
+        </div>
+        @if (BatchDisplay)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="all-batch-reg">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item">All Batch Requests</div>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="batch-upload">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item">Create Batch Request</div>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="batch-reg-actions">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> Actions</div>
+                </NavLink>
+            </div>
+        }
+        <div class="nav-item px-1">
+            <NavLink class="nav-link" href="all-VisitRegularizations" @onclick="ClickOnVR">
+                <span class=@VRSign aria-hidden="true"></span><div class="navigation-item">Visit Regularization</div>
+            </NavLink>
+        </div>
+        @if (VRDisplay)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="all-VisitRegularizations">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item">All Visit Regularizations</div>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="VR">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> Create Visit Request</div>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="Actions-VR">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> My Actions</div>
+                </NavLink>
+            </div>
+        }
+        <div class="nav-item px-1">
+            <NavLink class="nav-link" href="all-minutesheets" @onclick="ClickOnMinute">
+                <span class="@minuteSign" aria-hidden="true"></span><div class="navigation-item">Minute Sheet</div>
+            </NavLink>
+        </div>
+
+        @if (minuteDisplay)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="minutesheet">
+                    <span class="oi oi-bolt" aria-hidden="true"></span> <div class="navigation-item">Minute Sheet</div>
+                </NavLink>
+
+            </div>
+
+
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="actions-min">
+                    <span class="oi oi-bolt" aria-hidden="true"></span> <div class="navigation-item">Actions</div>
+                </NavLink>
+            </div>
+
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="share-minutesheets">
+                    <span class="oi oi-bolt" aria-hidden="true"></span> <div class="navigation-item">Shared MinuteSheets</div>
+                </NavLink>
+            </div>
+
+        }
+        <div class="nav-item px-1">
+            <NavLink class="nav-link" href="all-positionrequisitions" @onclick="ClickOnposReq">
+                <span class="@posReqSign" aria-hidden="true"></span><div class="navigation-item">Position Requisition</div>
+            </NavLink>
+        </div>
+
+        @if (posReqDisplay)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="PositionRequisition">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> Position Requisition</div>
+                </NavLink>
+
+            </div>
+
+
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="actions-posReq">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> Actions</div>
+                </NavLink>
+            </div>
+
+        }
+
+       @* <div class="nav-item px-1">
+            <NavLink class="nav-link" href="all-changemanagements" @onclick="ClickOnchaMan">
+                <span class="@chaManSign" aria-hidden="true"></span><div class="navigation-item">Change Management</div>
+            </NavLink>
+        </div>
+
+        @if (chaManDisplay)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="ChangeManagement">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> Change Management</div>
+                </NavLink>
+
+            </div>
+
+
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="actions-chaMan">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> Actions</div>
+                </NavLink>
+            </div>
+
+        }
+
+        <div class="nav-item px-1">
+            <NavLink class="nav-link" href="all-datacenters" @onclick="ClickOndatCen">
+                <span class="@datCenSign" aria-hidden="true"></span><div class="navigation-item">ICT Data Center Checklist</div>
+            </NavLink>
+        </div>
+
+        @if (datCenDisplay)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="DataCenter">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> ICT Data Center</div>
+                </NavLink>
+
+            </div>
+
+
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="actions-datCen">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> Actions</div>
+                </NavLink>
+            </div>
+
+        }
+
+        <div class="nav-item px-1">
+            <NavLink class="nav-link" href="all-datacenters" @onclick="ClickOnlatSit">
+                <span class="@latSitSign" aria-hidden="true"></span><div class="navigation-item">Late Sitting Form</div>
+            </NavLink>
+        </div>
+
+        @if (latSitDisplay)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="LateSitting">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> Late Sitting Form</div>
+                </NavLink>
+
+            </div>
+
+
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="actions-latSit">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item"> Actions</div>
+                </NavLink>
+            </div>
+
+        }
+        <div class="nav-item px-1">
+            <NavLink class="nav-link" href="all-datacenters" @onclick="ClickOnlatSit">
+                <span class="@latSitSign" aria-hidden="true"></span><div class="navigation-item">Employee Referral Form</div>
+            </NavLink>
+        </div>
+
+        @if (empRefDisplay)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="EmployeeReferral">
+                    <span class="oi oi-bolt" aria-hidden="true"></span><div class="navigation-item">Employee Referral</div>
+                </NavLink>
+
+            </div>
+
+        }
+        @*<div class="nav-item px-1">
+            <NavLink class="nav-link" href="sap">
+                <span class="oi oi-star" aria-hidden="true"></span> SAP CONNECTIVITY
+            </NavLink>
+        </div>*@
+
+        
+    </nav>
+</div>
+@code {
+
+    private static string empRefSign { get; set; } = "oi oi-plus";
+    private static bool empRefDisplay { get; set; } = false;
+
+
+    private void ClickOnempRef()
+    {
+        empRefDisplay = !empRefDisplay;
+        if (empRefSign == "oi oi-plus")
+            empRefSign = "oi oi-minus";
+        else
+            empRefSign = "oi oi-plus";
+    }
+
+    private static string latSitSign { get; set; } = "oi oi-plus";
+    private static bool latSitDisplay { get; set; } = false;
+
+
+    private void ClickOnlatSit()
+    {
+        latSitDisplay = !latSitDisplay;
+        if (latSitSign == "oi oi-plus")
+            latSitSign = "oi oi-minus";
+        else
+            latSitSign = "oi oi-plus";
+    }
+
+
+    private static string datCenSign { get; set; } = "oi oi-plus";
+    private static bool datCenDisplay { get; set; } = false;
+
+
+    private void ClickOndatCen()
+    {
+        datCenDisplay = !datCenDisplay;
+        if (datCenSign == "oi oi-plus")
+            datCenSign = "oi oi-minus";
+        else
+            datCenSign = "oi oi-plus";
+    }
+
+
+    private static string chaManSign { get; set; } = "oi oi-plus";
+    private static bool chaManDisplay { get; set; } = false;
+
+
+    private void ClickOnchaMan()
+    {
+        chaManDisplay = !chaManDisplay;
+        if (chaManSign == "oi oi-plus")
+            chaManSign = "oi oi-minus";
+        else
+            chaManSign = "oi oi-plus";
+    }
+
+    private static string posReqSign { get; set; } = "oi oi-plus";
+    private static bool posReqDisplay { get; set; } = false;
+
+
+    private void ClickOnposReq()
+    {
+        posReqDisplay = !posReqDisplay;
+        if (posReqSign == "oi oi-plus")
+            posReqSign = "oi oi-minus";
+        else
+            posReqSign = "oi oi-plus";
+    }
+
+    private static string minuteSign { get; set; } = "oi oi-plus";
+    private static bool minuteDisplay { get; set; } = false;
+
+
+    private void ClickOnMinute()
+    {
+        minuteDisplay = !minuteDisplay;
+        if (minuteSign == "oi oi-plus")
+            minuteSign = "oi oi-minus";
+        else
+            minuteSign = "oi oi-plus";
+    }
+
+    private static string leaveSign { get; set; } = "oi oi-plus";
+    private static bool leaveDisplay { get; set; } = false;
+
+
+    private void ClickOnLeave()
+    {
+        leaveDisplay = !leaveDisplay;
+        if (leaveSign == "oi oi-plus")
+            leaveSign = "oi oi-minus";
+        else
+            leaveSign = "oi oi-plus";
+    }
+
+    private static string PoSign { get; set; } = "oi oi-plus";
+    private static bool PoDisplay { get; set; } = false;
+
+
+    private void ClickOnPO()
+    {
+        PoDisplay = !PoDisplay;
+        if (PoSign == "oi oi-plus")
+            PoSign = "oi oi-minus";
+        else
+            PoSign = "oi oi-plus";
+    }
+    private static string RegSign { get; set; } = "oi oi-plus";
+    private static bool AttendenceDisplay { get; set; } = false;
+
+    private void ClickOnReg()
+    {
+        AttendenceDisplay = !AttendenceDisplay;
+        if (RegSign == "oi oi-plus")
+            RegSign = "oi oi-minus";
+        else
+            RegSign = "oi oi-plus";
+    }
+
+    private static string batchSign { get; set; } = "oi oi-plus";
+    private static bool BatchDisplay { get; set; } = false;
+
+    private void ClickOnBatch()
+    {
+        BatchDisplay = !BatchDisplay;
+        if (batchSign == "oi oi-plus")
+            batchSign = "oi oi-minus";
+        else
+            batchSign = "oi oi-plus";
+    }
+
+
+    private static string AdminSign { get; set; } = "oi oi-plus";
+    private static bool AdminDisplay { get; set; } = false;
+
+    private void ClickOnAdmin()
+    {
+        AdminDisplay = !AdminDisplay;
+        if (AdminSign == "oi oi-plus")
+            AdminSign = "oi oi-minus";
+        else
+            AdminSign = "oi oi-plus";
+    }
+
+    private static string VRSign { get; set; } = "oi oi-plus";
+    private static bool VRDisplay { get; set; } = false;
+
+
+    private void ClickOnVR()
+    {
+        VRDisplay = !VRDisplay;
+        if (VRSign == "oi oi-plus")
+            VRSign = "oi oi-minus";
+        else
+            VRSign = "oi oi-plus";
+    }
+
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void OnNavLinkClick(string path)
+    {
+        navigationManager.NavigateTo(path);
+    }
+    ApplicationUser AppUser;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            if (httpContextAccessor.HttpContext.Session.TryGetValue("UserData", out var userDataBytes))
+            {
+                var userDataJson = Encoding.UTF8.GetString(userDataBytes);
+                AppUser = JsonSerializer.Deserialize<ApplicationUser>(userDataJson);
+            }
+        }
+
+}
+
+
+
+
+}
+

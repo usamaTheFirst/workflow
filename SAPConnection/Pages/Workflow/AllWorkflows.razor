@@ -1,0 +1,149 @@
+﻿@page "/all-workflows"
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.EntityFrameworkCore;
+
+@using SAPConnection.Data;
+@using SAPConnection.Data.Services;
+@inject WorkFlowService workflowService
+@inject IJSRuntime JSRuntime
+
+@inject IHttpContextAccessor httpContextAccessor
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager navigationManager
+@inject ApplicationUser cau
+@using System.Text
+@using System.Text.Json
+@inject IHttpContextAccessor httpContextAccessor
+
+
+<CascadingAuthenticationState>
+    <AuthorizeView>
+
+        <NotAuthorized>
+            @{
+                <RedirectTo></RedirectTo>
+
+            }
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
+
+
+<h1>Workflows</h1>
+
+@if (wfs == null)
+{
+    <div class="container-fluid">
+        <div class="spinner-border" role="status">
+        </div>
+    </div>
+}
+else if (wfs.Count == 0)
+{
+    <p><em>No Workflows found.</em></p>
+}
+else
+{
+    <div class="container-fluid" style="text-align:right; display:inline-block;">
+        <select class="form-select form-select-lg mb-3" style="display:inline-block; width:auto;" @onchange="SpecificWFs">
+            <option selected value="all">All</option>
+            <option value="leave">Leave</option>
+            <option value="po">Payment Order</option>
+            <option value="timeEvents">Attendence Regularization</option>
+            <option value="visitReg">Visit Regularization</option>
+            <option value="positionReq">Position Requisition</option>
+
+
+
+        </select>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+        <thead>
+            <tr>
+
+                <th>Key</th>
+
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var wf in wfs)
+            {
+                <tr>
+
+                    <td>@wf</td>
+                    <td style="text-align:right; display:inline-block; width:100%;">
+                        <a class="btn mybtn" @onclick="() => GoToSelectedWorkFlow(wf)">                                
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
+                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+                            </svg> View
+                        </a>
+                        @*&nbsp;
+                        <a class="btn mybtn2" href="#" @onclick="() => DeleteSelectedWorkFlow(wf)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
+                              <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"/>
+                            </svg> Delete
+                        </a>*@
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+}
+
+@code {
+    List<string> wfs;
+    ApplicationUser AppUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            if (httpContextAccessor.HttpContext.Session.TryGetValue("UserData", out var userDataBytes))
+            {
+                var userDataJson = Encoding.UTF8.GetString(userDataBytes);
+                AppUser = JsonSerializer.Deserialize<ApplicationUser>(userDataJson);
+                wfs = await workflowService.GetAllWorkflowKeysAsync();
+            }
+        }
+        else
+        {
+            navigationManager.NavigateTo("/t");
+        }
+    }
+
+    private void GoToSelectedWorkFlow(string? selkey)
+    {
+        navigationManager.NavigateTo($"selected-workflow/{selkey}");
+    }
+
+    private async Task SpecificWFs(ChangeEventArgs e)
+    {
+        string selectedOption = e.Value.ToString();
+        if(selectedOption!="all")
+        {
+            wfs = await workflowService.GetAllWorkflowKeysByAppAsync(selectedOption);
+        }
+        else
+        {
+            wfs = await workflowService.GetAllWorkflowKeysAsync();
+        }
+    }
+
+    //private async Task DeleteSelectedWorkFlow(string? swf)
+    //{
+    //    if (await JSRuntime.InvokeAsync<bool>("confirm", new object[] { "Are you sure you want to delete this workflow?" }))
+    //    {
+    //        await workflowService.DeleteWorkFlowAsync(swf);
+    //        wfs = await workflowService.GetAllWorkflowKeysAsync();
+    //        navigationManager.NavigateTo("/all-workflows");
+    //    }
+    //}
+}

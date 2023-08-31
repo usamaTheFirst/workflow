@@ -1,0 +1,70 @@
+﻿@if(appnam=="leave")
+{
+    <option value="@LeaveTypeModel.Casual">Casual</option>
+    <option value="@LeaveTypeModel.Sick">Sick</option>
+    <option value="@LeaveTypeModel.Annual">Annual</option>
+    <option value="@LeaveTypeModel.Special_Leave_General_With_Pay">Special Leave General With Pay</option>
+    <option value="@LeaveTypeModel.Special_Leave_Medical_With_Pay">Special Leave Medical With Pay</option>
+    <option value="@LeaveTypeModel.Special_Leave_General_Without_Pay">Special Leave General Without Pay</option>
+    <option value="@LeaveTypeModel.Special_Leave_Medical_Without_Pay">Special Leave Medical Without Pay</option>
+    <option value="@LeaveTypeModel.Maternity">Maternity</option>
+    <option value="@LeaveTypeModel.Paternity">Paternity</option>
+    <option value="@LeaveTypeModel.Sabbatical">Sabbatical</option>
+}
+else if (appnam == "timeEvents")
+{
+    <option value="Attendence_Regularization">Attendence Regularization</option>
+
+}
+else if(appnam=="po")
+{
+    <option value="Adjustment_Against_Advance_for_Sadqa_Goat">Adjustment Against Advance for Sadqa/Goat</option>
+    <option value="Car_Registration">Car Registration</option>
+    <option value="Cash_Advance_for_Material_Services">Cash (Advance) for Material/Services</option>
+    <option value="Catering_Expenses">Catering Expenses</option>
+    <option value="Club_Committee">Club Committee</option>
+    <option value="Courier_TCS_Registry_Charges">Courier / TCS / Registry Charges</option>
+    <option value="Fuel_Charges">Fuel Charges</option>
+    <option value="Gift_for_Management_Jnr_Management">Gift for Management / Jnr Management</option>
+    <option value="Hospital_Medical_Investigation">Hospital & Medical Investigation</option>
+    <option value="Hotel_Charges">Hotel Charges</option>
+    <option value="Membership_Professional_New_Renewal">Membership Professional (New/Renewal)</option>
+    <option value="Mobile_Phone_Reimbursement">Mobile Phone Reimbursement</option>
+    <option value="Movement_of_Personal_Effects">Movement of Personal Effects</option>
+    <option value="Payment_to_Travel_Agents">Payment to Travel Agents</option>
+    <option value="Payment_to_Vendor_Against_Material">Payment to Vendor Against Material</option>
+    <option value="Payment_to_Vendor_Against_Mess_Purchases">Payment to Vendor Against Mess Purchases</option>
+    <option value="Payment_to_Vendor_Against_Services">Payment to Vendor Against Services</option>
+    <option value="Payments_to_Visa_Processing">Payments to Visa Processing</option>
+    <option value="Periodicals_Newspapers">Periodicals Newspapers</option>
+    <option value="Public_Relations">Public Relations</option>
+    <option value="Regulatory_Payments_Charges">Regulatory Payments / Charges</option>
+    <option value="Reimbursement_for_Reward_Recognition">Reimbursement for Reward & Recognition</option>
+    <option value="Reimbursement_of_Amount_for_Monthly_Club_Membership">Reimbursement of Amount for Monthly Club Membership</option>
+    <option value="Reimbursement_Of_Amount_For_any_Official_Item">Reimbursement Of Amount (For any Official Item)</option>
+    <option value="Reimbursement_of_Amount_For_MD_Only">Reimbursement of Amount (For MD Only)</option>
+    <option value="Reimbursement_of_Ticket">Reimbursement of Ticket</option>
+    <option value="Reimbursement_of_Vehicle_Accessories">Reimbursement of Vehicle Accessories</option>
+    <option value="Rental_Accomodations_Offices">Rental Accomodations / Offices</option>
+    <option value="Repair_of_Workshop_Eqpt_Payment_to_pre_qualified_vendors_only">Repair of Workshop Eqpt (Payment to pre-qualified vendors only)</option>
+    <option value="Social_Events_at_HO">Social Events at HO</option>
+    <option value="Social_Events_at_PS">Social Events at PS</option>
+    <option value="Taxi_Fair_Charges">Taxi Fair Charges</option>
+    <option value="Utilities_Periodic_Monthly_Bills">Utilities (Periodic / Monthly Bills)</option>
+    <option value="Vehicle_Repair_Maintenance">Vehicle Repair/Maintenance</option>
+}
+else if (appnam == "visitReg")
+{
+    <option value="Visit_Regularization">Visit Regularization</option>
+
+}
+else if (appnam == "positionReq")
+{
+    <option value="Position_Requisition">Position Requisition</option>
+
+}
+@code {
+    [Parameter]
+    public string appnam { set; get; }
+
+}
